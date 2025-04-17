@@ -39,7 +39,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, CustomFilter customFilter) throws Exception {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
@@ -55,7 +55,7 @@ public class SecurityConfig {
                 .exceptionHandling((exception->{
                     exception.accessDeniedHandler(new AccessDeniedHandler());
                 }))
-//                .addFilterAfter(new CustomFilter(), BearerTokenAuthenticationFilter.class)
+                .addFilterAfter(customFilter, BearerTokenAuthenticationFilter.class)
                 .build();
     }
 
