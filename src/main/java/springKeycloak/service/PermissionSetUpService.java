@@ -9,6 +9,8 @@ import springKeycloak.repositories.UserPermissionRepo;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class PermissionSetUpService {
@@ -20,14 +22,23 @@ public class PermissionSetUpService {
         this.permissionSetUpRepo = permissionSetUpRepo;
     }
 
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINSTRATOR')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','MANAGE_PERMISSIONS')")
     public PermissionSetUp savePermissionSetup(PermissionSetUp permissionSetUp){
         permissionSetUp.setCreatedAt(ZonedDateTime.now());
         return permissionSetUpRepo.save(permissionSetUp);
     }
 
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINSTRATOR')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','MANAGE_PERMISSIONS')")
     public List<PermissionSetUp> getPermissionSetups(){
         return permissionSetUpRepo.findAll();
+    }
+
+    public PermissionSetUp getPermissionSetUpById(UUID id){
+        Optional<PermissionSetUp> permissionSetUpOptional = permissionSetUpRepo.findById(id);
+        if (permissionSetUpOptional.isEmpty()){
+            throw new NullPointerException("permission role setup record not found");
+        }
+
+        return permissionSetUpOptional.get();
     }
 }

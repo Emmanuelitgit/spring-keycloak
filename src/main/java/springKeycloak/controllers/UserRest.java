@@ -1,46 +1,49 @@
 package springKeycloak.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import springKeycloak.Exception.NotFoundException;
+import springKeycloak.dto.ResponseDTO;
+import springKeycloak.dto.UserDTO;
 import springKeycloak.dto.UserPermissionDTO;
 import springKeycloak.models.User;
 import springKeycloak.models.UserPermission;
 import springKeycloak.service.UserService;
+import springKeycloak.utils.AppUtils;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+public class UserRest {
 
     private final UserService userService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserRest(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping
-    public ResponseEntity<Object> saveUser(@RequestBody User userPayload){
+    public ResponseEntity<ResponseDTO> saveUser(@RequestBody UserDTO userPayload){
         System.out.println("Data:====" + userPayload);
-        User user = userService.saveUser(userPayload);
+        ResponseDTO user = userService.saveUser(userPayload);
         if (user == null){
-            return new ResponseEntity<>("An error occur in saving user record", HttpStatusCode.valueOf(400));
+            ResponseDTO response = AppUtils.getResponseDto("", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatusCode.valueOf(400));
         }
-        return new ResponseEntity<>(user, HttpStatusCode.valueOf(201));
+        ResponseDTO response = AppUtils.getResponseDto("user record saved",HttpStatus.CREATED, user);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(201));
     }
 
     @GetMapping
     public ResponseEntity<Object> getUsers(){
         List<User> users = userService.getUsers();
-        if (users.isEmpty()){
-            return new ResponseEntity<>("No user record found", HttpStatusCode.valueOf(404));
-        }
         return new ResponseEntity<>(users, HttpStatusCode.valueOf(200));
     }
 

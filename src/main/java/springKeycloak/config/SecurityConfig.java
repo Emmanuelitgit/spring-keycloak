@@ -3,6 +3,7 @@ package springKeycloak.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +20,19 @@ public class SecurityConfig {
 
     private final JwtAuthConverter jwtAuthConverter;
 
+    private static final String[] SWAGGER_ENDPOINTS = {
+            "/", HttpMethod.GET.name(),
+            "/actuator/**",
+            "/swagger-ui/**",
+            "/configuration/**",
+            "/swagger-resources/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/webjars/**",
+            "/assets/**",
+            "/static/**",
+    };
+
     @Autowired
     public SecurityConfig(JwtAuthConverter jwtAuthConverter) {
         this.jwtAuthConverter = jwtAuthConverter;
@@ -28,7 +42,11 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> {
+                    auth
+                            .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
+                            .anyRequest().authenticated();
+                })
                 .oauth2ResourceServer((auth->{
                     auth.jwt(jwt->{
                         jwt.jwtAuthenticationConverter(jwtAuthConverter);

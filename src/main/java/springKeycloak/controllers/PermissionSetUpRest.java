@@ -11,12 +11,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/permission-setups")
-public class PermissionSetUpController {
+public class PermissionSetUpRest {
 
     private final PermissionSetUpService permissionSetUpService;
 
     @Autowired
-    public PermissionSetUpController(PermissionSetUpService permissionSetUpService) {
+    public PermissionSetUpRest(PermissionSetUpService permissionSetUpService) {
         this.permissionSetUpService = permissionSetUpService;
     }
 
