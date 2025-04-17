@@ -5,14 +5,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.OAuthFlows;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Arrays;
 
 
 /**
@@ -23,21 +19,24 @@ import java.util.Arrays;
 @Configuration
 public class SwaggerConfig {
 
-    private String KEYCLOAK_TOKEN_PATH = "http://localhost:8080/realms/TestRealm/protocol/openid-connect/token";
-
+    private SecurityScheme createAPIKeyScheme() {
+        return new SecurityScheme().type(SecurityScheme.Type.HTTP)
+                .bearerFormat("JWT")
+                .scheme("bearer");
+    }
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI openAPI() {
         return new OpenAPI()
-                .components(new Components()
-                                .addSecuritySchemes("spring_oauth", new SecurityScheme()
-                                        .type(SecurityScheme.Type.OAUTH2) //Specifying the kind of authentication to use i.e. OAUTH2
-                                        .description("Oauth2 flow")
-                                        .flows(new OAuthFlows()
-                                                .password(new OAuthFlow().tokenUrl(KEYCLOAK_TOKEN_PATH) //token generation url ie Keycloak in this case
-                                                )))
-                )
-                .security(Arrays.asList(
-                        new SecurityRequirement().addList("spring_oauth")));
+                .addSecurityItem(new SecurityRequirement().
+                        addList("Bearer Authentication"))
+                .components(new Components().addSecuritySchemes
+                        ("Bearer Authentication", createAPIKeyScheme()))
+                .info(new Info().title("Functional Based Permission")
+                        .description("Spring Integration API.")
+                        .version("1.0").contact(new Contact().name("Code With Manuel Dev")
+                                .email( "www.manueldev.com").url("eyidana001@gmail.com"))
+                        .license(new License().name("License of API")
+                                .url("API license URL")));
     }
 }

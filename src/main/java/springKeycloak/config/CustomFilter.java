@@ -55,42 +55,50 @@ public class CustomFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Collection<GrantedAuthority> authorities = new ArrayDeque<>();
+        String username = "";
         // getting already authenticated user details
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // loading user permissions from the db the username
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<UserPermissionDTO> permissions = userService.getUserPermissionsByUsername(username);
-        // iterating and setting each permission in the granted authority collection
-        if (permissions == null){
-            filterChain.doFilter(request, response);
-        }
-        if(permissions != null){
-            for (UserPermissionDTO permission:permissions){
-                authorities.add(new SimpleGrantedAuthority(permission.getPermission()));
+        if (authentication != null){
+            username = authentication.getName();
+            List<UserPermissionDTO> permissions = userService.getUserPermissionsByUsername(username);
+            // iterating and setting each permission in the granted authority collection
+            if (permissions == null){
+                filterChain.doFilter(request, response);
+            }
+            if(permissions != null){
+                for (UserPermissionDTO permission:permissions){
+                    authorities.add(new SimpleGrantedAuthority(permission.getPermission()));
+                }
             }
         }
         // iterating and setting each role permission in the granted authority collection
         // the purpose of this is to extract user role permissions and add it to the user specific permissions
-        ResponseDTO role = userRoleService.getUserRoleByUserId(appUtils.getAuthenticatedUserId());
-        System.out.println("ROLE:=======:" + role.getData());
-        System.out.println("USER ID:======:" + appUtils.getAuthenticatedUserId());
-        if (role != null){
-            List<RolePermissionsDTO> rolePermissionsDTOList = rolePermissionRepo.findRolePermissionsByRoleName(role.getData().toString());
-            if (rolePermissionsDTOList !=null){
-                for (RolePermissionsDTO rolePermission:rolePermissionsDTOList){
-                    authorities.add(new SimpleGrantedAuthority(rolePermission.getPermission()));
+        if (authentication != null){
+            ResponseDTO role = userRoleService.getUserRoleByUserId(appUtils.getAuthenticatedUserId());
+            System.out.println("ROLE:=======:" + role.getData());
+            System.out.println("USER ID:======:" + appUtils.getAuthenticatedUserId());
+            if (role != null && role.getData() != null){
+                List<RolePermissionsDTO> rolePermissionsDTOList = rolePermissionRepo.findRolePermissionsByRoleName(role.getData().toString());
+                if (rolePermissionsDTOList !=null){
+                    for (RolePermissionsDTO rolePermission:rolePermissionsDTOList){
+                        authorities.add(new SimpleGrantedAuthority(rolePermission.getPermission()));
+                    }
                 }
             }
+            // removing duplicates
+            Set<GrantedAuthority> authoritySet = authorities.stream().collect(Collectors.toSet());
+            // adding existing user permissions to the permissions loaded from the db
+            authoritySet.addAll(authentication.getAuthorities());
+            // setting them back to the authentication object
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(username,null, authoritySet);
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            System.out.println(SecurityContextHolder.getContext().getAuthentication());
+            filterChain.doFilter(request, response);
         }
-        // removing duplicates
-        Set<GrantedAuthority> authoritySet = authorities.stream().collect(Collectors.toSet());
-        // adding existing user permissions to the permissions loaded from the db
-        authoritySet.addAll(authentication.getAuthorities());
-        // setting them back to the authentication object
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username,null, authoritySet);
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        System.out.println(SecurityContextHolder.getContext().getAuthentication());
+
         filterChain.doFilter(request, response);
+
     }
 }

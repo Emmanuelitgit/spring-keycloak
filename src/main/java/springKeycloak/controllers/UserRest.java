@@ -42,9 +42,10 @@ public class UserRest {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getUsers(){
+    public ResponseEntity<ResponseDTO> getUsers(){
         List<User> users = userService.getUsers();
-        return new ResponseEntity<>(users, HttpStatusCode.valueOf(200));
+        ResponseDTO response = AppUtils.getResponseDto("users", HttpStatus.OK, users);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(200));
     }
 
     @GetMapping("/{id}")
@@ -64,5 +65,12 @@ public class UserRest {
         System.out.println(SecurityContextHolder.getContext().getAuthentication());
         List<UserPermissionDTO> permissions = userService.getUserPermissionsByUserId(userId);
         return new ResponseEntity<>(permissions, HttpStatusCode.valueOf(200));
+    }
+
+    @GetMapping("/user-permissions-and-role-permissions")
+    public ResponseEntity<ResponseDTO> getUserPermissionsAndRolePermissions(){
+        System.out.println("HELLO");
+        ResponseDTO response = userService.getUserPermissionsAndRolePermissions();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import springKeycloak.Exception.InvalidDataException;
 import springKeycloak.Exception.NotFoundException;
 import springKeycloak.dto.ResponseDTO;
+import springKeycloak.dto.RolePermissionsDTO;
 import springKeycloak.dto.UserDTO;
 import springKeycloak.dto.UserPermissionDTO;
 import springKeycloak.models.PermissionSetUp;
@@ -37,15 +38,17 @@ public class UserService {
     private final UserPermissionRepo userPermissionRepo;
     private final AppUtils appUtils;
     private final UserRoleRepo userRoleRepo;
+    private final PermissionSetUpService permissionSetUpService;
     private UserRoleService userRoleService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PermissionSetUpRepo permissionSetUpRepo, UserPermissionRepo userPermissionRepo, AppUtils appUtils, UserRoleRepo userRoleRepo) {
+    public UserService(UserRepository userRepository, PermissionSetUpRepo permissionSetUpRepo, UserPermissionRepo userPermissionRepo, AppUtils appUtils, UserRoleRepo userRoleRepo, PermissionSetUpService permissionSetUpService) {
         this.userRepository = userRepository;
         this.permissionSetUpRepo = permissionSetUpRepo;
         this.userPermissionRepo = userPermissionRepo;
         this.appUtils = appUtils;
         this.userRoleRepo = userRoleRepo;
+        this.permissionSetUpService = permissionSetUpService;
     }
 
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR', 'VIEW_USER_LIST')")
@@ -147,4 +150,24 @@ public class UserService {
             throw new AccessDeniedException("Unauthorized");
             }
     }
+
+public ResponseDTO getUserPermissionsAndRolePermissions(){
+    List<RolePermissionsDTO> permissions = userPermissionRepo.getUserPermissionsAndRolePermissions();
+    if (permissions.isEmpty()){
+        return AppUtils.getResponseDto("no permission record found", HttpStatus.NOT_FOUND);
+    }
+
+    List<PermissionSetUp> permissionSetUps = permissionSetUpRepo.findAll();
+    Map<String, Object> permissionResult = new HashMap<>();
+    for (PermissionSetUp permissionSetup:permissionSetUps){
+        if (permissions.contains(permissionSetup.getName())){
+            permissionResult.put("permission", permissionSetup);
+            permissionResult.put("status", true);
+        }else {
+            permissionResult.put("permission", permissionSetup);
+            permissionResult.put("status", false);
+        }
+    }
+    return AppUtils.getResponseDto("permissions", HttpStatus.OK, permissionResult);
+}
 }
