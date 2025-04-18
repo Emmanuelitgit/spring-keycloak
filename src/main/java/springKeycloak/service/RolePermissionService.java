@@ -1,7 +1,10 @@
 package springKeycloak.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import springKeycloak.dto.ResponseDTO;
 import springKeycloak.models.PermissionSetUp;
 import springKeycloak.models.RolePermission;
 import springKeycloak.models.RoleSetUp;
@@ -32,7 +35,7 @@ public class RolePermissionService {
         this.appUtils = appUtils;
     }
 
-    public List<RolePermission> saveRolePermission(List<UUID> permissions, UUID roleId){
+    public ResponseEntity<ResponseDTO> saveRolePermission(List<UUID> permissions, UUID roleId){
 
         List<RolePermission> rolePermissions = new ArrayList<>();
         for (UUID permissionId:permissions){
@@ -40,7 +43,8 @@ public class RolePermissionService {
             RoleSetUp roleSetUp = roleSetUpService.getRoleById(roleId);
 
             if (permissionSetUp == null || roleSetUp == null){
-                throw new NullPointerException("user or role record not found");
+                ResponseDTO response =AppUtils.getResponseDto("user or role record not found", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
 
             RolePermission rolePermission = new RolePermission();
@@ -52,6 +56,7 @@ public class RolePermissionService {
             rolePermissions.add(rolePermission);
         }
 
-        return rolePermissions;
+        ResponseDTO response = AppUtils.getResponseDto("permission assigned success", HttpStatus.OK, rolePermissions);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

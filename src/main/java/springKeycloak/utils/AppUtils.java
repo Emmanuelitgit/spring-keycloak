@@ -60,6 +60,14 @@ public class AppUtils {
         return userOptional.get().getId();
     }
 
+    /**
+     * This method is used to handle all responses in the application.
+     * @param message
+     * @param status
+     * @return responseDto object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
     public static ResponseDTO getResponseDto(String message, HttpStatus status){
         ResponseDTO responseDto = new ResponseDTO();
         responseDto.setMessage(message);
@@ -68,6 +76,15 @@ public class AppUtils {
         return responseDto;
     }
 
+    /**
+     * This method is used to handle all responses in the application.
+     * @param message
+     * @param status
+     * @param data
+     * @return responseDto object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
     public static ResponseDTO getResponseDto(String message, HttpStatus status, Object data){
         if(data==null){
             ResponseDTO responseDto = getResponseDto(message, status);

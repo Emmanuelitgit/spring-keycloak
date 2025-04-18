@@ -16,4 +16,6 @@ public interface UserRoleRepo extends JpaRepository<UserRole, UUID> {
             "JOIN role_setup_tb rs ON rs.id = ur.role_id " +
             "WHERE u.id=? ", nativeQuery = true)
     Optional<UserRoleDTO> findUserRoleByUserId(UUID userId);
+
+    void deleteUserRoleByUserId(UUID userId);
 }

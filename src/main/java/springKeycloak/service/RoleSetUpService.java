@@ -1,8 +1,11 @@
 package springKeycloak.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import springKeycloak.dto.ResponseDTO;
 import springKeycloak.models.RoleSetUp;
 import springKeycloak.repositories.RoleSetUpRepo;
 import springKeycloak.utils.AppUtils;
@@ -25,6 +28,13 @@ public class RoleSetUpService {
         this.appUtils = appUtils;
     }
 
+    /**
+     * This method is used to save a role setup.
+     * @param roleSetUp
+     * @return roleSetUp object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR')")
     public RoleSetUp saveRole(RoleSetUp roleSetUp){
         roleSetUp.setCreatedAt(ZonedDateTime.now());
@@ -32,17 +42,34 @@ public class RoleSetUpService {
         return roleSetUpRepo.save(roleSetUp);
     }
 
+    /**
+     * This method is used to get all roles.
+     * @return roleSetUp object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR')")
-    public List<RoleSetUp> getAllRoles(){
-        return roleSetUpRepo.findAll();
+    public ResponseEntity<ResponseDTO> getAllRoles(){
+        List<RoleSetUp> roleSetUps = roleSetUpRepo.findAll();
+        if (roleSetUps.isEmpty()){
+            ResponseDTO response = AppUtils.getResponseDto("no permission setup record found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        ResponseDTO response = AppUtils.getResponseDto("no permission setups", HttpStatus.OK, roleSetUps);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * This method is used to a role by id.
+     * @return rolePermissionDto object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
     public RoleSetUp getRoleById(UUID id){
         Optional<RoleSetUp> roleSetUpOptional = roleSetUpRepo.findById(id);
         if (roleSetUpOptional.isEmpty()){
             throw new NullPointerException("No role record found");
         }
-
         return roleSetUpOptional.get();
     }
 }

@@ -43,9 +43,7 @@ public class UserRest {
 
     @GetMapping
     public ResponseEntity<ResponseDTO> getUsers(){
-        List<User> users = userService.getUsers();
-        ResponseDTO response = AppUtils.getResponseDto("users", HttpStatus.OK, users);
-        return new ResponseEntity<>(response, HttpStatusCode.valueOf(200));
+        return userService.getUsers();
     }
 
     @GetMapping("/{id}")
@@ -54,10 +52,9 @@ public class UserRest {
         return new ResponseEntity<>(user, HttpStatusCode.valueOf(200));
     }
 
-    @PostMapping("/{userId}/assign/permissions")
-    public ResponseEntity<Object> saveUserPermissions(@PathVariable UUID userId, @RequestBody List<UUID> permissionIds){
-        List<UserPermission> userPermission = userService.saveUserPermissions(userId, permissionIds);
-        return new ResponseEntity<>(userPermission, HttpStatusCode.valueOf(200));
+    @PutMapping("/{userId}")
+    public ResponseEntity<ResponseDTO> updateUser(@PathVariable UUID userId,@RequestBody UserDTO payload){
+        return userService.updateUser(userId, payload);
     }
 
     @GetMapping("/{userId}/permissions")
@@ -70,7 +67,6 @@ public class UserRest {
     @GetMapping("/user-permissions-and-role-permissions")
     public ResponseEntity<ResponseDTO> getUserPermissionsAndRolePermissions(){
         System.out.println("HELLO");
-        ResponseDTO response = userService.getUserPermissionsAndRolePermissions();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return userService.getUserPermissionsAndRolePermissions();
     }
 }

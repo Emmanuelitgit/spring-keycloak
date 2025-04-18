@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springKeycloak.dto.ResponseDTO;
 import springKeycloak.models.RolePermission;
 import springKeycloak.service.RolePermissionService;
 
@@ -22,8 +23,7 @@ public class RolePermissionRest {
     }
 
     @PostMapping("/{roleId}")
-    public ResponseEntity<Object> saveRolePermission(@RequestBody List<UUID> permissions, @PathVariable UUID roleId){
-        List<RolePermission> rolePermission = rolePermissionService.saveRolePermission(permissions, roleId);
-        return new ResponseEntity<>(rolePermission, HttpStatus.OK);
+    public ResponseEntity<ResponseDTO> saveRolePermission(@RequestBody List<UUID> permissions, @PathVariable UUID roleId){
+        return rolePermissionService.saveRolePermission(permissions, roleId);
     }
 }

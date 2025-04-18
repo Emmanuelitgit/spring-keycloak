@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
+public class JwtAuthConverter implements Converter<Jwt,AbstractAuthenticationToken> {
 
     /**
      * This is usd to concatenate the extracted realm and resource roles as one authorities set.
