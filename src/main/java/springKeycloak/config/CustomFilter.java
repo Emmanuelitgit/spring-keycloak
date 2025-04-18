@@ -59,7 +59,7 @@ public class CustomFilter extends OncePerRequestFilter {
         if (authentication != null){
             UUID userId = appUtils.getAuthenticatedUserId();
             ResponseDTO role = userService.getUserRoleByUserId(appUtils.getAuthenticatedUserId());
-            List<RolePermissionsDTO > permissions = userPermissionRepo.getUserPermissionsAndRolePermissions(userId, role.getData().toString());
+            List<RolePermissionsDTO > permissions = userService.getPermissions(userId, role.getData().toString());
             if (!permissions.isEmpty()){
                 for (RolePermissionsDTO permission:permissions){
                     authorities.add(new SimpleGrantedAuthority(permission.getPermission()));

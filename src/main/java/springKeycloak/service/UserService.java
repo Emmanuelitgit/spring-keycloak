@@ -3,6 +3,7 @@ package springKeycloak.service;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -146,6 +147,27 @@ public class UserService {
     }
 
     /**
+     * This method is used to permanently remove user given the user id.
+     * @param userId
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
+    public void deleteUser(UUID userId){
+        userRepository.deleteById(userId);
+        removeUserPermissions(userId);
+        removeUserRole(userId);
+    }
+
+    /**
+     * This method is used to change the status of user given the user id.
+     * @param userId
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
+    public boolean toggleUserStatus(UUID userId){
+        return false;
+    }
+    /**
      * This method is used to save user permissions. call when saving or updating user records.
      * @param userId
      * @param permissions
@@ -161,7 +183,7 @@ public class UserService {
         }
        
         if (!permissions.isEmpty()){
-            userPermissionRepo.deleteAllByUserId(userId);
+            removeUserPermissions(userId);
             for (UUID id:permissions){
                 UserPermission userPermission = new UserPermission();
                 Optional<PermissionSetUp> permissionSetUpOptional = permissionSetUpRepo.findById(id);
@@ -189,7 +211,7 @@ public class UserService {
         RoleSetUp roleSetUp = roleSetUpService.getRoleById(roleId);
 
         if (user !=null && roleSetUp != null){
-            userRoleRepo.deleteUserRoleByUserId(userId);
+            removeUserRole(userId);
             UserRole userRole = new UserRole();
             userRole.setUserId(userId);
             userRole.setRoleId(roleId);
@@ -202,13 +224,33 @@ public class UserService {
     }
 
     /**
+     * This method is used to remove user permissions given the user id.
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
+    public void removeUserPermissions(UUID userId){
+        userPermissionRepo.deleteAllByUserId(userId);
+    }
+
+    /**
+     * This method is used to remove user role given the user id.
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
+    public void removeUserRole(UUID userId){
+        userRoleRepo.deleteUserRoleByUserId(userId);
+    }
+
+    /**
      * This method is used to get user role by the user id.
      * @param id
      * @return userRoleDto object
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
+    @Cacheable(value = "userRole", key = "#id")
     public ResponseDTO getUserRoleByUserId(UUID id){
+        System.out.println("Calling DB for user role...");
         Optional<UserRoleDTO> userRoleOptional = userRoleRepo.findUserRoleByUserId(id);
         if (userRoleOptional.isEmpty()){
             return AppUtils.getResponseDto("no role record found", HttpStatus.NOT_FOUND);
@@ -303,5 +345,17 @@ public class UserService {
         }
         ResponseDTO response = AppUtils.getResponseDto("permissions", HttpStatus.OK, permissions);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * This method is used to get user permissions and the user role permissions and cache them for subsequent use.
+     * @return rolePermissionDto object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
+    @Cacheable(value = "userPermissions", key = "#userId")
+    public List<RolePermissionsDTO> getPermissions(UUID userId, String role){
+        System.out.println("Calling DB for permissions...");
+        return userPermissionRepo.getUserPermissionsAndRolePermissions(userId, role);
     }
 }
