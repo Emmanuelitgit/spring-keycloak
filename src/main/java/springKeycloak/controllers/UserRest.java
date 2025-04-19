@@ -1,5 +1,6 @@
 package springKeycloak.controllers;
 
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -12,6 +13,7 @@ import springKeycloak.dto.UserDTO;
 import springKeycloak.dto.UserPermissionDTO;
 import springKeycloak.models.User;
 import springKeycloak.models.UserPermission;
+import springKeycloak.service.KeyCloakService;
 import springKeycloak.service.UserService;
 import springKeycloak.utils.AppUtils;
 
@@ -57,6 +59,13 @@ public class UserRest {
         return userService.updateUser(userId, payload);
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ResponseDTO> deleteUser(@PathVariable UUID userId){
+        userService.deleteUser(userId);
+        ResponseDTO response = AppUtils.getResponseDto("user deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping("/{userId}/permissions")
     public ResponseEntity<Object> getUserPermissionsByUserId(@PathVariable UUID userId){
         System.out.println(SecurityContextHolder.getContext().getAuthentication());
@@ -68,5 +77,12 @@ public class UserRest {
     public ResponseEntity<ResponseDTO> getUserPermissionsAndRolePermissions(){
         System.out.println("HELLO");
         return userService.getUserPermissionsAndRolePermissions();
+    }
+
+    @GetMapping("/keycloak-users")
+    public ResponseEntity<ResponseDTO> getKeycloakUsers(){
+        List<UserRepresentation> userRepresentations = KeyCloakService.getKeycloakUsers();
+        ResponseDTO response = AppUtils.getResponseDto("keycloak users", HttpStatus.OK, userRepresentations);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

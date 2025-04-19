@@ -35,6 +35,14 @@ public class RolePermissionService {
         this.appUtils = appUtils;
     }
 
+    /**
+     * This method is used to save role permissions.
+     * @param roleId
+     * @param permissions
+     * @return rolePermission object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
     public ResponseEntity<ResponseDTO> saveRolePermission(List<UUID> permissions, UUID roleId){
 
         List<RolePermission> rolePermissions = new ArrayList<>();

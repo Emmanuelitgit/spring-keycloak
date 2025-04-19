@@ -34,9 +34,10 @@ public class UserService {
     private final UserRoleRepo userRoleRepo;
     private final PermissionSetUpService permissionSetUpService;
     private final RoleSetUpService roleSetUpService;
+    private final KeyCloakService keyCloakService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PermissionSetUpRepo permissionSetUpRepo, UserPermissionRepo userPermissionRepo, AppUtils appUtils, UserRoleRepo userRoleRepo, PermissionSetUpService permissionSetUpService, RoleSetUpService roleSetUpService) {
+    public UserService(UserRepository userRepository, PermissionSetUpRepo permissionSetUpRepo, UserPermissionRepo userPermissionRepo, AppUtils appUtils, UserRoleRepo userRoleRepo, PermissionSetUpService permissionSetUpService, RoleSetUpService roleSetUpService, KeyCloakService keyCloakService) {
         this.userRepository = userRepository;
         this.permissionSetUpRepo = permissionSetUpRepo;
         this.userPermissionRepo = userPermissionRepo;
@@ -44,6 +45,7 @@ public class UserService {
         this.userRoleRepo = userRoleRepo;
         this.permissionSetUpService = permissionSetUpService;
         this.roleSetUpService = roleSetUpService;
+        this.keyCloakService = keyCloakService;
     }
 
     /**
@@ -85,6 +87,8 @@ public class UserService {
         }
         saveUserPermissions(userData.getId(), userPayload.getPermissions());
         saveUserRole(userPayload.getRole(), userData.getId());
+        // saving user to keycloak
+        KeyCloakService.addUserToKeycloak(userPayload);
         return AppUtils.getResponseDto("record added successfully", HttpStatus.CREATED,userPayload);
     }
 
@@ -152,6 +156,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
+    @Transactional
     public void deleteUser(UUID userId){
         userRepository.deleteById(userId);
         removeUserPermissions(userId);
@@ -191,6 +196,7 @@ public class UserService {
                     userPermission.setUserId(userId);
                     userPermission.setPermissionId(id);
                     userPermission.setCreatedAt(ZonedDateTime.now());
+                    userPermission.setCreatedBy(appUtils.getAuthenticatedUserId());
                     userPermissionRepo.save(userPermission);
                 }
             }

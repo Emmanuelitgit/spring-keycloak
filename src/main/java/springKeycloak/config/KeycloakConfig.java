@@ -4,16 +4,18 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.springframework.stereotype.Component;
 
+@Component
 public class KeycloakConfig {
 
     static Keycloak keycloak = null;
     final static String serverUrl = "http://localhost:8080";
-    public final static String realm = "Test Realm";
+    public final static String realm = "TestRealm";
     final static String clientId = "test-app";
-    final static String clientSecret = "uETa2RyUgyruMWDKVHbUDiZgE3YUDzH6";
-    final static String userName = "eyidana001@gmail.com";
-    final static String password = "Emma19571!";
+    final static String clientSecret = "xK7Ds7giCVwRnycwmGWVy90z6cYuyjKA";
+    final static String userName = "eyidana";
+    final static String password = "1234";
 
 
     public KeycloakConfig() {
