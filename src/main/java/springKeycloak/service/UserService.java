@@ -54,7 +54,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 18h April 2025
      */
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USER_LIST','SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USERS')")
     public ResponseEntity<ResponseDTO> getUsers(){
         List<User> users = userRepository.findAll();
         ResponseDTO response = AppUtils.getResponseDto("users fetched successfully", HttpStatus.OK, users);
@@ -88,7 +88,7 @@ public class UserService {
         saveUserPermissions(userData.getId(), userPayload.getPermissions());
         saveUserRole(userPayload.getRole(), userData.getId());
         // saving user to keycloak
-        KeyCloakService.addUserToKeycloak(userPayload);
+        keyCloakService.addUserToKeycloak(userPayload);
         return AppUtils.getResponseDto("record added successfully", HttpStatus.CREATED,userPayload);
     }
 

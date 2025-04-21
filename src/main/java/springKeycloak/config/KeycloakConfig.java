@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KeycloakConfig {
 
-    static Keycloak keycloak = null;
+    public static Keycloak keycloak = null;
     final static String serverUrl = "http://localhost:8080";
     public final static String realm = "TestRealm";
     final static String clientId = "test-app";

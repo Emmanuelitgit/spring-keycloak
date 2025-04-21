@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import springKeycloak.Exception.NotFoundException;
+import springKeycloak.dto.KeycloakPermissionsDTO;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.dto.UserDTO;
 import springKeycloak.dto.UserPermissionDTO;
@@ -25,10 +26,12 @@ import java.util.UUID;
 public class UserRest {
 
     private final UserService userService;
+    private final AppUtils appUtils;
 
     @Autowired
-    public UserRest(UserService userService) {
+    public UserRest(UserService userService, AppUtils appUtils, AppUtils appUtils1) {
         this.userService = userService;
+        this.appUtils = appUtils1;
     }
 
     @PostMapping
@@ -85,4 +88,9 @@ public class UserRest {
         ResponseDTO response = AppUtils.getResponseDto("keycloak users", HttpStatus.OK, userRepresentations);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+//    @GetMapping("/keycloak-permissions")
+//    public Object KeycloakPermissionsDTO(){
+//        return appUtils.getUserPermissionsFromKeycloak();
+//    }
 }

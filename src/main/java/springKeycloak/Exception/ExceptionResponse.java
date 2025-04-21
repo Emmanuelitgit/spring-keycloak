@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.utils.AppUtils;
@@ -36,4 +37,5 @@ public class ExceptionResponse{
         response.put("status", "400");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
 }

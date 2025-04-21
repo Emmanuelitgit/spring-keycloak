@@ -1,14 +1,10 @@
 package springKeycloak.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -53,7 +49,7 @@ public class JwtAuthConverter implements Converter<Jwt,AbstractAuthenticationTok
 
         Collection<String> roles = (Collection<String>) realmAccess.get("roles");
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
 
@@ -66,18 +62,18 @@ public class JwtAuthConverter implements Converter<Jwt,AbstractAuthenticationTok
      */
     private Collection<GrantedAuthority> extractResourceRoles(Jwt jwt) {
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-        if (resourceAccess == null || !resourceAccess.containsKey("test-app")) {
+        if (resourceAccess == null || !resourceAccess.containsKey("realm-management")) {
             return Collections.emptyList();
         }
 
-        Map<String, Object> resource = (Map<String, Object>) resourceAccess.get("test-app");
+        Map<String, Object> resource = (Map<String, Object>) resourceAccess.get("realm-management");
         if (resource == null || !resource.containsKey("roles")) {
             return Collections.emptyList();
         }
 
         Collection<String> roles = (Collection<String>) resource.get("roles");
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
 }

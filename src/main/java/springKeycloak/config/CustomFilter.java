@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.dto.RolePermissionsDTO;
-import springKeycloak.dto.UserPermissionDTO;
 import springKeycloak.repositories.RolePermissionRepo;
 import springKeycloak.repositories.UserPermissionRepo;
 import springKeycloak.service.UserService;
@@ -50,6 +49,15 @@ public class CustomFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+//        if(request.getHeader("Authorization") != null){
+//            String token = request.getHeader("Authorization").substring(7);
+//            List<KeycloakPermissionsDTO> keycloakPermissions = appUtils.getUserPermissionsFromKeycloak(token);
+//
+//            for (KeycloakPermissionsDTO keycloakPermission : keycloakPermissions){
+//                System.out.println(keycloakPermission.getScopes());
+//            }
+//
+//        }
         Collection<GrantedAuthority> authorities = new ArrayDeque<>();
         // getting already authenticated user details
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -39,6 +39,7 @@ public class RoleSetUpService {
     public RoleSetUp saveRole(RoleSetUp roleSetUp){
         roleSetUp.setCreatedAt(ZonedDateTime.now());
         roleSetUp.setCreatedBy(appUtils.getAuthenticatedUserId());
+        KeyCloakService.addRoleToKeycloak(roleSetUp.getName());
         return roleSetUpRepo.save(roleSetUp);
     }
 
@@ -52,10 +53,10 @@ public class RoleSetUpService {
     public ResponseEntity<ResponseDTO> getAllRoles(){
         List<RoleSetUp> roleSetUps = roleSetUpRepo.findAll();
         if (roleSetUps.isEmpty()){
-            ResponseDTO response = AppUtils.getResponseDto("no permission setup record found", HttpStatus.NOT_FOUND);
+            ResponseDTO response = AppUtils.getResponseDto("no role setup record found", HttpStatus.NOT_FOUND);
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
-        ResponseDTO response = AppUtils.getResponseDto("no permission setups", HttpStatus.OK, roleSetUps);
+        ResponseDTO response = AppUtils.getResponseDto("role setups", HttpStatus.OK, roleSetUps);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

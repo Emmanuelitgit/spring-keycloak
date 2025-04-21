@@ -1,17 +1,22 @@
 package springKeycloak.utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import springKeycloak.dto.KeycloakPermissionsDTO;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.models.User;
 import springKeycloak.repositories.UserRepository;
-import springKeycloak.service.UserService;
 
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,10 +24,14 @@ import java.util.UUID;
 public class AppUtils {
 
     private final UserRepository userRpo;
+    private final RestTemplate restTemplate;
+    private final String TOKEN_ENDPOINT = "http://localhost:8080/realms/TestRealm/protocol/openid-connect/token";
+    private final String CLIENT_SECRET = "xK7Ds7giCVwRnycwmGWVy90z6cYuyjKA";
 
     @Autowired
-    public AppUtils(UserRepository userRpo) {
+    public AppUtils(UserRepository userRpo, RestTemplate restTemplate) {
         this.userRpo = userRpo;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -98,4 +107,41 @@ public class AppUtils {
         return responseDto;
     }
 
+    /**
+     * This method is used to get user permissions from keycloak given the access token.
+     *
+     * @param
+     * @return responseDto object
+     * @auther Emmanuel Yidana
+     * @createdAt 16h April 2025
+     */
+    public List<KeycloakPermissionsDTO> getUserPermissionsFromKeycloak(String accessToken){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket");
+        formData.add("client_id", "test-app");
+        formData.add("client_secret", CLIENT_SECRET);
+        formData.add("username", "eyidana");
+        formData.add("password", "1234");
+        formData.add("response_mode", "permissions");
+        formData.add("subject_token", accessToken);
+        formData.add("audience", "test-app");
+
+        // 3. Wrap in HttpEntity
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
+
+        // 4. Send POST request
+        ResponseEntity<List<KeycloakPermissionsDTO>> response = restTemplate.exchange(
+                TOKEN_ENDPOINT,
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<List<KeycloakPermissionsDTO>>() {}
+        );
+
+        // 5. Print token response
+        System.out.println("Response: " + response.getBody().get(0).getRsname());
+        return response.getBody();
+    }
 }
