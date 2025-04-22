@@ -314,7 +314,7 @@ public class UserService {
     }
 
     /**
-     * This method is used to get user permissions and the user role permissions.
+     * This method is used to get authenticated user permissions and the user role permissions.
      * @return rolePermissionDto object
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025

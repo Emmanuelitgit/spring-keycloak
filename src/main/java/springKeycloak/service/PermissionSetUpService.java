@@ -1,25 +1,32 @@
 package springKeycloak.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import springKeycloak.dto.ResponseDTO;
+import springKeycloak.dto.RolePermissionsDTO;
 import springKeycloak.models.PermissionSetUp;
+import springKeycloak.models.RolePermission;
 import springKeycloak.repositories.PermissionSetUpRepo;
+import springKeycloak.repositories.RolePermissionRepo;
 import springKeycloak.repositories.UserPermissionRepo;
+import springKeycloak.utils.AppUtils;
 
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class PermissionSetUpService {
 
     private final PermissionSetUpRepo permissionSetUpRepo;
+    private final RolePermissionRepo rolePermissionRepo;
 
     @Autowired
-    public PermissionSetUpService(PermissionSetUpRepo permissionSetUpRepo) {
+    public PermissionSetUpService(PermissionSetUpRepo permissionSetUpRepo, RolePermissionRepo rolePermissionRepo) {
         this.permissionSetUpRepo = permissionSetUpRepo;
+        this.rolePermissionRepo = rolePermissionRepo;
     }
 
     /**
@@ -41,7 +48,7 @@ public class PermissionSetUpService {
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','MANAGE_PERMISSIONS')")
+//    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','MANAGE_PERMISSIONS')")
     public List<PermissionSetUp> getPermissionSetups(){
         return permissionSetUpRepo.findAll();
     }
@@ -58,5 +65,43 @@ public class PermissionSetUpService {
             throw new NullPointerException("permission role setup record not found");
         }
         return permissionSetUpOptional.get();
+    }
+
+    /**
+     * This method is used to fetch permissions setups and role default permissions given the role name.
+     * @param role
+     * @return
+     * @auther Emmanuel Yidana
+     * @createdAt 22nd April 2025
+     */
+    public ResponseEntity<ResponseDTO> getPermissionSetupsAndRoleDefaultPermissions(String role){
+        // loading permission setups from the db
+        List<PermissionSetUp> permissionSetups = permissionSetUpRepo.findAll();
+        if (permissionSetups.isEmpty()){
+            ResponseDTO response = AppUtils.getResponseDto("no permission setup record found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        // loading role permissions from the db
+        List<RolePermissionsDTO> rolePermissions = rolePermissionRepo.findRolePermissionsByRoleName(role);
+
+        // we check if the user default role already has a permission which is in the permission setups.
+        // we set the status to true in matching cases otherwise false.
+        List<Object> responseList = new ArrayList<>();
+        for (PermissionSetUp permissionSetup:permissionSetups){
+            Map<String, Object> responseObject = new HashMap<>();
+            boolean status = rolePermissions.stream()
+                    .anyMatch((permission -> permission.getPermission().equals(permissionSetup.getName())));
+            if (status){
+                responseObject.put("status", true);
+            }
+            if (!status){
+                responseObject.put("status", false);
+            }
+            responseObject.put("permission", permissionSetup.getName());
+            responseList.add(responseObject);
+        }
+
+        ResponseDTO response = AppUtils.getResponseDto("permission setups", HttpStatus.OK, responseList);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
