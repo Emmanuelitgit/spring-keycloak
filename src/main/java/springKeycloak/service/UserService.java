@@ -54,7 +54,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 18h April 2025
      */
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USERS')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USER')")
     public ResponseEntity<ResponseDTO> getUsers(){
         List<User> users = userRepository.findAll();
         ResponseDTO response = AppUtils.getResponseDto("users fetched successfully", HttpStatus.OK, users);
@@ -103,7 +103,7 @@ public class UserService {
         boolean hasAuthority = AppUtils.getAuthenticatedUserAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(auth -> auth.equals("VIEW_USER_LIST") || auth.equals("SYSTEM ADMINISTRATOR"));
+                .anyMatch(auth -> auth.equals("VIEW_USER") || auth.equals("SYSTEM ADMINISTRATOR"));
         if (appUtils.getAuthenticatedUserId().equals(id) || hasAuthority){
             Optional<User> userOptional = userRepository.findById(id);
             if (userOptional.isEmpty()){
