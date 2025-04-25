@@ -7,11 +7,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.dto.RolePermissionsDTO;
-import springKeycloak.models.PermissionSetUp;
-import springKeycloak.models.RolePermission;
+import springKeycloak.models.setup.PermissionSetUp;
 import springKeycloak.repositories.PermissionSetUpRepo;
 import springKeycloak.repositories.RolePermissionRepo;
-import springKeycloak.repositories.UserPermissionRepo;
 import springKeycloak.utils.AppUtils;
 
 import java.time.ZonedDateTime;

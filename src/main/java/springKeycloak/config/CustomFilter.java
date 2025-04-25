@@ -61,16 +61,17 @@ public class CustomFilter extends OncePerRequestFilter {
         Collection<GrantedAuthority> authorities = new ArrayDeque<>();
         // getting already authenticated user details
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         // iterating and setting each role permission in the granted authority collection
         // the purpose of this is to extract user role permissions and add it to the user specific permissions
         if (authentication != null){
             UUID userId = appUtils.getAuthenticatedUserId();
             ResponseDTO role = userService.getUserRoleByUserId(appUtils.getAuthenticatedUserId());
-            List<RolePermissionsDTO > permissions = userService.getPermissions(userId, role.getData().toString());
-            if (!permissions.isEmpty()){
-                for (RolePermissionsDTO permission:permissions){
-                    authorities.add(new SimpleGrantedAuthority(permission.getPermission()));
+            if (role.getData() != null){
+                List<RolePermissionsDTO > permissions = userService.getPermissions(userId, role.getData().toString());
+                if (!permissions.isEmpty()){
+                    for (RolePermissionsDTO permission:permissions){
+                        authorities.add(new SimpleGrantedAuthority(permission.getPermission()));
+                    }
                 }
             }
             System.out.println("ROLE:=======:" + role.getData());

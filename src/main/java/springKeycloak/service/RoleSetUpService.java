@@ -6,11 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import springKeycloak.dto.ResponseDTO;
-import springKeycloak.models.RoleSetUp;
+import springKeycloak.models.setup.RoleSetUp;
 import springKeycloak.repositories.RoleSetUpRepo;
 import springKeycloak.utils.AppUtils;
 
-import javax.management.relation.Role;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;

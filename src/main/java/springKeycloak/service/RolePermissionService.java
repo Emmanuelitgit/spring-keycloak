@@ -5,10 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import springKeycloak.dto.ResponseDTO;
-import springKeycloak.models.PermissionSetUp;
+import springKeycloak.models.setup.PermissionSetUp;
 import springKeycloak.models.RolePermission;
-import springKeycloak.models.RoleSetUp;
-import springKeycloak.models.User;
+import springKeycloak.models.setup.RoleSetUp;
 import springKeycloak.repositories.RolePermissionRepo;
 import springKeycloak.utils.AppUtils;
 

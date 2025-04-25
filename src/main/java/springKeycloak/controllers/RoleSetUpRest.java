@@ -5,10 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springKeycloak.dto.ResponseDTO;
-import springKeycloak.models.RoleSetUp;
+import springKeycloak.models.setup.RoleSetUp;
 import springKeycloak.service.RoleSetUpService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/role-setups")

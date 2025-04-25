@@ -1,9 +1,7 @@
 package springKeycloak.service;
 
 import jakarta.transaction.Transactional;
-import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -12,16 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import springKeycloak.config.KeycloakConfig;
 import springKeycloak.dto.UserDTO;
-import springKeycloak.models.RoleSetUp;
+import springKeycloak.models.setup.RoleSetUp;
 
 import javax.ws.rs.core.Response;
-import java.security.Key;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import static springKeycloak.config.KeycloakConfig.keycloak;
 
 @Component
 public class KeyCloakService {

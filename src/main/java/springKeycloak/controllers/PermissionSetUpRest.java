@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springKeycloak.dto.ResponseDTO;
-import springKeycloak.models.PermissionSetUp;
+import springKeycloak.models.setup.PermissionSetUp;
 import springKeycloak.service.PermissionSetUpService;
 
 import java.util.List;

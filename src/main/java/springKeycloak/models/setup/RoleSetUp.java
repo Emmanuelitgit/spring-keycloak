@@ -1,4 +1,4 @@
-package springKeycloak.models;
+package springKeycloak.models.setup;
 
 import jakarta.persistence.*;
 
@@ -6,8 +6,8 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "permission_setup_tb")
-public class PermissionSetUp {
+@Table(name = "role_setup_tb")
+public class RoleSetUp {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -15,10 +15,10 @@ public class PermissionSetUp {
     private ZonedDateTime createdAt;
     private UUID createdBy;
 
-    public PermissionSetUp() {
+    public RoleSetUp() {
     }
 
-    public PermissionSetUp(ZonedDateTime createdAt, UUID createdBy, UUID id, String name) {
+    public RoleSetUp(ZonedDateTime createdAt, UUID createdBy, UUID id, String name) {
         this.createdAt = createdAt;
         this.createdBy = createdBy;
         this.id = id;

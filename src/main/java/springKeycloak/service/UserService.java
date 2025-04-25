@@ -14,6 +14,8 @@ import springKeycloak.Exception.InvalidDataException;
 import springKeycloak.Exception.NotFoundException;
 import springKeycloak.dto.*;
 import springKeycloak.models.*;
+import springKeycloak.models.setup.PermissionSetUp;
+import springKeycloak.models.setup.RoleSetUp;
 import springKeycloak.repositories.PermissionSetUpRepo;
 import springKeycloak.repositories.UserPermissionRepo;
 import springKeycloak.repositories.UserRepository;
@@ -54,7 +56,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 18h April 2025
      */
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USER')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USER', 'MANAGE_USER')")
     public ResponseEntity<ResponseDTO> getUsers(){
         List<User> users = userRepository.findAll();
         ResponseDTO response = AppUtils.getResponseDto("users fetched successfully", HttpStatus.OK, users);
@@ -68,7 +70,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR', 'CREATE_USER')")
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR', 'CREATE_USER', 'MANAGE_USER')")
     @Transactional
     public ResponseDTO saveUser(UserDTO userPayload){
         if (userPayload == null){
@@ -99,6 +101,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USER', 'MANAGE_USER')")
     public User getUserById(UUID id){
         boolean hasAuthority = AppUtils.getAuthenticatedUserAuthorities()
                 .stream()
@@ -124,7 +127,8 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
-    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','UPDATE_USER')")
+
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','UPDATE_USER', 'MANAGE_USER')")
     @Transactional
     public ResponseEntity<ResponseDTO> updateUser(UUID userId, UserDTO payload){
         Optional<User> userOptional = userRepository.findById(userId);
@@ -156,6 +160,7 @@ public class UserService {
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
+    @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','DELETE_USER', 'MANAGE_USER')")
     @Transactional
     public void deleteUser(UUID userId){
         userRepository.deleteById(userId);
