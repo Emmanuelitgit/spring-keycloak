@@ -42,7 +42,7 @@ public class CustomFilter extends OncePerRequestFilter {
 
     /**
      * This is used to perform necessary checks and set the required attributes and values after authentication.
-     * This code runs after the JWTConverter but before the controller methods.
+     * This method runs after the JWTConverter but before the controller methods.
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */

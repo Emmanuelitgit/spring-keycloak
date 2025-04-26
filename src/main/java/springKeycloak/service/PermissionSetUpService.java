@@ -118,6 +118,12 @@ public class PermissionSetUpService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * This method is used to fetch permission setups and categories they belong to.
+     * @return
+     * @auther Emmanuel Yidana
+     * @createdAt 26th April 2025
+     */
     public ResponseEntity<ResponseDTO> getPermissionSetUpsAndCategory(){
         List<PermissionCategoryDTO> permissionsAndCategories = permissionSetUpRepo.getPermissionSetUpsAndCategory();
         if (permissionsAndCategories.isEmpty()){
