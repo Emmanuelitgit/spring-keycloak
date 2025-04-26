@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,18 +19,19 @@ import springKeycloak.models.setup.PermissionSetUp;
 import springKeycloak.models.setup.RoleSetUp;
 import springKeycloak.repositories.PermissionSetUpRepo;
 import springKeycloak.repositories.UserPermissionRepo;
-import springKeycloak.repositories.UserRepository;
+import springKeycloak.repositories.UserRepo;
 import springKeycloak.repositories.UserRoleRepo;
 import springKeycloak.utils.AppUtils;
 
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepo userRepo;
     private final PermissionSetUpRepo permissionSetUpRepo;
     private final UserPermissionRepo userPermissionRepo;
     private final AppUtils appUtils;
@@ -39,8 +41,8 @@ public class UserService {
     private final KeyCloakService keyCloakService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PermissionSetUpRepo permissionSetUpRepo, UserPermissionRepo userPermissionRepo, AppUtils appUtils, UserRoleRepo userRoleRepo, PermissionSetUpService permissionSetUpService, RoleSetUpService roleSetUpService, KeyCloakService keyCloakService) {
-        this.userRepository = userRepository;
+    public UserService(UserRepo userRepo, PermissionSetUpRepo permissionSetUpRepo, UserPermissionRepo userPermissionRepo, AppUtils appUtils, UserRoleRepo userRoleRepo, PermissionSetUpService permissionSetUpService, RoleSetUpService roleSetUpService, KeyCloakService keyCloakService) {
+        this.userRepo = userRepo;
         this.permissionSetUpRepo = permissionSetUpRepo;
         this.userPermissionRepo = userPermissionRepo;
         this.appUtils = appUtils;
@@ -58,8 +60,38 @@ public class UserService {
      */
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','VIEW_USER', 'MANAGE_USER')")
     public ResponseEntity<ResponseDTO> getUsers(){
-        List<User> users = userRepository.findAll();
-        ResponseDTO response = AppUtils.getResponseDto("users fetched successfully", HttpStatus.OK, users);
+        List<UserResponseDTO> userResponseData = userRepo.getUserDetails();
+        if (userResponseData.isEmpty()){
+            ResponseDTO  response = AppUtils.getResponseDto("no user record found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        // storing the entire object
+        List<Object> data = new ArrayList<>();
+        // storing permissions with email as key
+        Map<String, List<String>> permissions = new HashMap<>();
+        for (UserResponseDTO user:userResponseData){
+            Map<String, Object> objectData = new HashMap<>();
+            objectData.put("full name", user.getFirstName()  + " "+ user.getLastName());
+            objectData.put("username", user.getUsername());
+            objectData.put("email", user.getEmail());
+            objectData.put("role", user.getRole());
+
+            // setting permissions with email as key
+            if (!permissions.containsKey(user.getEmail())){
+                permissions.put(user.getEmail(), new ArrayList<>());
+            }
+            permissions.get(user.getEmail()).add(user.getPermission());
+
+            // now setting permissions in the object
+            objectData.put("permissions", permissions.get(user.getEmail()));
+            data.add(objectData);
+        }
+
+        // streaming to remove duplicates
+        Set<Object> res = data.stream().collect(Collectors.toSet());
+
+        ResponseDTO response = AppUtils.getResponseDto("user details", HttpStatus.OK, res);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -72,9 +104,20 @@ public class UserService {
      */
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR', 'CREATE_USER', 'MANAGE_USER')")
     @Transactional
-    public ResponseDTO saveUser(UserDTO userPayload){
+    public ResponseEntity<ResponseDTO> saveUser(UserDTO userPayload){
         if (userPayload == null){
             throw new InvalidDataException("Invalid data");
+        }
+        Optional<User> emailExist = userRepo.findUserByEmail(userPayload.getEmail());
+        Optional<User> usernameExist = userRepo.findUserByUsername(userPayload.getUsername());
+
+        if (usernameExist.isPresent()){
+            ResponseDTO  response = AppUtils.getResponseDto("username already exist", HttpStatus.valueOf(208));
+            return new ResponseEntity<>(response, HttpStatusCode.valueOf(208));
+        }
+        if (emailExist.isPresent()){
+            ResponseDTO  response = AppUtils.getResponseDto("email already exist", HttpStatus.valueOf(208));
+            return new ResponseEntity<>(response, HttpStatusCode.valueOf(208));
         }
         User user = new User();
         user.setEmail(userPayload.getEmail());
@@ -82,7 +125,7 @@ public class UserService {
         user.setUsername(userPayload.getUsername());
         user.setPassword(userPayload.getPassword());
         user.setLastName(userPayload.getLastName());
-        User userData = userRepository.save(user);
+        User userData = userRepo.save(user);
 
         if (userData.getId() == null){
            throw new NotFoundException("permission record not found");
@@ -91,8 +134,9 @@ public class UserService {
         saveUserRole(userPayload.getRole(), userData.getId());
         // saving user to keycloak
         keyCloakService.addUserToKeycloak(userPayload);
-        return AppUtils.getResponseDto("record added successfully", HttpStatus.CREATED,userPayload);
-    }
+
+        ResponseDTO  response = AppUtils.getResponseDto("user record added successfully",HttpStatus.CREATED, userPayload);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);    }
 
     /**
      * This method is used to get user records by the user id.
@@ -108,7 +152,7 @@ public class UserService {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(auth -> auth.equals("VIEW_USER") || auth.equals("SYSTEM ADMINISTRATOR"));
         if (appUtils.getAuthenticatedUserId().equals(id) || hasAuthority){
-            Optional<User> userOptional = userRepository.findById(id);
+            Optional<User> userOptional = userRepo.findById(id);
             if (userOptional.isEmpty()){
                 throw new NotFoundException("user record not found");
             }
@@ -131,7 +175,7 @@ public class UserService {
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','UPDATE_USER', 'MANAGE_USER')")
     @Transactional
     public ResponseEntity<ResponseDTO> updateUser(UUID userId, UserDTO payload){
-        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<User> userOptional = userRepo.findById(userId);
         if (userOptional.isEmpty()){
             ResponseDTO response = AppUtils.getResponseDto("user record not found", HttpStatus.NOT_FOUND);
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
@@ -143,7 +187,7 @@ public class UserService {
             user.setFirstName(payload.getFirstName());
             user.setLastName(payload.getLastName());
             user.setUsername(payload.getUsername());
-            userRepository.save(user);
+            userRepo.save(user);
             saveUserPermissions(userId, payload.getPermissions());
             saveUserRole(payload.getRole(), userId);
             ResponseDTO response = AppUtils.getResponseDto("user saved successfully", HttpStatus.OK, payload);
@@ -163,7 +207,7 @@ public class UserService {
     @PreAuthorize("hasAnyAuthority('SYSTEM ADMINISTRATOR','DELETE_USER', 'MANAGE_USER')")
     @Transactional
     public void deleteUser(UUID userId){
-        userRepository.deleteById(userId);
+        userRepo.deleteById(userId);
         removeUserPermissions(userId);
         removeUserRole(userId);
     }
@@ -187,7 +231,7 @@ public class UserService {
      */
     @Transactional
     public void saveUserPermissions(UUID userId, List<UUID> permissions){
-        Optional<User> userOptional = userRepository.findById(userId);
+        Optional<User> userOptional = userRepo.findById(userId);
         if (userOptional.isEmpty()) {
             throw new NullPointerException("User record not found");
         }

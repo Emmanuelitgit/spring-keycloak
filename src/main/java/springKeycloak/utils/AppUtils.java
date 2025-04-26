@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import springKeycloak.dto.KeycloakPermissionsDTO;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.models.User;
-import springKeycloak.repositories.UserRepository;
+import springKeycloak.repositories.UserRepo;
 
 
 import java.time.ZonedDateTime;
@@ -23,13 +23,13 @@ import java.util.UUID;
 @Component
 public class AppUtils {
 
-    private final UserRepository userRpo;
+    private final UserRepo userRpo;
     private final RestTemplate restTemplate;
     private final String TOKEN_ENDPOINT = "http://localhost:8080/realms/TestRealm/protocol/openid-connect/token";
     private final String CLIENT_SECRET = "xK7Ds7giCVwRnycwmGWVy90z6cYuyjKA";
 
     @Autowired
-    public AppUtils(UserRepository userRpo, RestTemplate restTemplate) {
+    public AppUtils(UserRepo userRpo, RestTemplate restTemplate) {
         this.userRpo = userRpo;
         this.restTemplate = restTemplate;
     }

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import springKeycloak.dto.PermissionCategoryDTO;
 import springKeycloak.dto.ResponseDTO;
 import springKeycloak.dto.RolePermissionsDTO;
 import springKeycloak.models.setup.PermissionSetUp;
@@ -65,6 +66,20 @@ public class PermissionSetUpService {
         return permissionSetUpOptional.get();
     }
 
+    public ResponseEntity<ResponseDTO> updatePermissionSetup(PermissionSetUp permissionSetUp, UUID id){
+        Optional<PermissionSetUp> permissionSetUpOptional = permissionSetUpRepo.findById(id);
+        if (permissionSetUpOptional.isEmpty()){
+            ResponseDTO response = AppUtils.getResponseDto("permission setup record not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        PermissionSetUp existingData = permissionSetUpOptional.get();
+        System.out.println("CategoryId:========" + permissionSetUp.getCategoryId());
+        existingData.setCategoryId(permissionSetUp.getCategoryId());
+        PermissionSetUp res = permissionSetUpRepo.save(existingData);
+
+        ResponseDTO response = AppUtils.getResponseDto("permission setup updated successfully", HttpStatus.OK, res);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
     /**
      * This method is used to fetch permissions setups and role default permissions given the role name.
      * @param role
@@ -100,6 +115,24 @@ public class PermissionSetUpService {
         }
 
         ResponseDTO response = AppUtils.getResponseDto("permission setups", HttpStatus.OK, responseList);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<ResponseDTO> getPermissionSetUpsAndCategory(){
+        List<PermissionCategoryDTO> permissionsAndCategories = permissionSetUpRepo.getPermissionSetUpsAndCategory();
+        if (permissionsAndCategories.isEmpty()){
+            ResponseDTO response = AppUtils.getResponseDto("no permission setup record found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        Map<String, List<String>> res = new HashMap<>();
+        for (PermissionCategoryDTO permissionCategory:permissionsAndCategories){
+            if (!res.containsKey(permissionCategory.getCategory())){
+                res.put(permissionCategory.getCategory(), new ArrayList<>());
+            }
+            res.get(permissionCategory.getCategory()).add(permissionCategory.getPermission());
+        }
+
+        ResponseDTO response = AppUtils.getResponseDto("permission setups", HttpStatus.OK, res);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

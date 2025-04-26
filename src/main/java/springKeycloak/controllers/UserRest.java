@@ -36,14 +36,7 @@ public class UserRest {
 
     @PostMapping
     public ResponseEntity<ResponseDTO> saveUser(@RequestBody UserDTO userPayload){
-        System.out.println("Data:====" + userPayload);
-        ResponseDTO user = userService.saveUser(userPayload);
-        if (user == null){
-            ResponseDTO response = AppUtils.getResponseDto("", HttpStatus.BAD_REQUEST);
-            return new ResponseEntity<>(response, HttpStatusCode.valueOf(400));
-        }
-        ResponseDTO response = AppUtils.getResponseDto("user record saved",HttpStatus.CREATED, user);
-        return new ResponseEntity<>(response, HttpStatusCode.valueOf(201));
+        return userService.saveUser(userPayload);
     }
 
     @GetMapping
@@ -88,6 +81,7 @@ public class UserRest {
         ResponseDTO response = AppUtils.getResponseDto("keycloak users", HttpStatus.OK, userRepresentations);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
 //    @GetMapping("/keycloak-permissions")
 //    public Object KeycloakPermissionsDTO(){
