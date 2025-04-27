@@ -363,15 +363,14 @@ public class UserService {
     }
 
     /**
-     * This method is used to get authenticated user permissions and the user role permissions.
+     * This method is used to get user permissions and the user role permissions.
      * @return rolePermissionDto object
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025
      */
-    public ResponseEntity<ResponseDTO > getUserPermissionsAndRolePermissions(){
+    public ResponseEntity<ResponseDTO > getUserPermissionsAndRolePermissions(UUID userId){
 
         // getting user role by user id
-        UUID userId = appUtils.getAuthenticatedUserId();
         Optional<UserRoleDTO> roleOptional = userRoleRepo.findUserRoleByUserId(userId);
         if (roleOptional.isEmpty()){
             ResponseDTO response = AppUtils.getResponseDto("role record not found", HttpStatus.NOT_FOUND);
@@ -404,6 +403,8 @@ public class UserService {
 
     /**
      * This method is used to get user permissions and the user role permissions and cache them for subsequent use.
+     * This method is for internal use only. we get the requester permissions and authorities.
+     * This method is called in the custom filter class.
      * @return rolePermissionDto object
      * @auther Emmanuel Yidana
      * @createdAt 16h April 2025

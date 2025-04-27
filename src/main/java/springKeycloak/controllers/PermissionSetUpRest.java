@@ -37,8 +37,8 @@ public class PermissionSetUpRest {
         return new ResponseEntity<>(permissionSetUps, HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("/permission-setups/role-default-permissions/{role}")
-    public ResponseEntity<ResponseDTO> getPermissionSetupsAndRoleDefaultPermissions(@PathVariable String role){
+    @GetMapping("/permission-setups/role-default-permissions")
+    public ResponseEntity<ResponseDTO> getPermissionSetupsAndRoleDefaultPermissions(@RequestParam(value = "role", defaultValue = "") String role){
         return permissionSetUpService.getPermissionSetupsAndRoleDefaultPermissions(role.toUpperCase());
     }
 

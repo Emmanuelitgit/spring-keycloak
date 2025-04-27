@@ -66,4 +66,6 @@ public class RolePermissionService {
         ResponseDTO response = AppUtils.getResponseDto("permission assigned success", HttpStatus.OK, rolePermissions);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
 }

@@ -69,10 +69,9 @@ public class UserRest {
         return new ResponseEntity<>(permissions, HttpStatusCode.valueOf(200));
     }
 
-    @GetMapping("/user-permissions-and-role-permissions")
-    public ResponseEntity<ResponseDTO> getUserPermissionsAndRolePermissions(){
-        System.out.println("HELLO");
-        return userService.getUserPermissionsAndRolePermissions();
+    @GetMapping("/user-permissions-and-role-permissions/{userId}")
+    public ResponseEntity<ResponseDTO> getUserPermissionsAndRolePermissions(@PathVariable UUID userId){
+        return userService.getUserPermissionsAndRolePermissions(userId);
     }
 
     @GetMapping("/keycloak-users")
